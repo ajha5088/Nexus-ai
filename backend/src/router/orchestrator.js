@@ -96,7 +96,7 @@ export async function orchestrate(query, userId = "anonymous", forceAgents = nul
       ms: 1,
     });
 
-    if (classified.confidence >= 0.8) {
+    if (classified.confidence >= 0.65) {
       routing = classified;
     } else {
       // Layer 4: LLM Supervisor (only when needed)
@@ -143,4 +143,43 @@ export async function orchestrate(query, userId = "anonymous", forceAgents = nul
 
   cacheSet(query, result);
   return result;
+}
+
+// Export this for the streaming endpoint
+export async function orchestrateAgentsOnly(query, userId = "anonymous", forceAgents = null) {
+  if (safetyCheck(query)) return { blocked: true };
+
+  let routing;
+  const trace = [];
+
+  if (forceAgents?.length) {
+    routing = { agents: forceAgents, confidence: 1.0, method: "forced", args: { query } };
+    trace.push({ layer: "forced-routing", agents: forceAgents, ms: 0 });
+  } else {
+    const classified = classifyIntent(query);
+    trace.push({ layer: "intent-classifier", agents: classified.agents, confidence: classified.confidence, method: classified.method, ms: 1 });
+
+    if (classified.confidence >= 0.65) {
+      routing = classified;
+    } else {
+      const supervised = await supervisorRoute(query);
+      trace.push({ layer: "llm-supervisor", agents: supervised.agents, ms: supervised.ms });
+      routing = { ...supervised, args: { query } };
+    }
+  }
+
+  const agentResults = await runAgents(routing.agents, routing.args);
+  agentResults.forEach((r) => {
+    trace.push({ layer: r.agent, success: r.success, ms: r.ms });
+  });
+
+  addTurn(userId, "user", query);
+
+  return {
+    trace,
+    agentResults,
+    agentsUsed: routing.agents,
+    routingMethod: routing.method,
+    llmCalls: routing.method === "llm-supervisor" ? 1 : 0,
+  };
 }

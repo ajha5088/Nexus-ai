@@ -1,7 +1,8 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import { orchestrate } from "./router/orchestrator.js";
+import { GoogleGenAI } from "@google/genai";
+import { orchestrate, orchestrateAgentsOnly } from "./router/orchestrator.js";
 import { getHistory } from "./memory/conversationMemory.js";
 import { storeDocuments } from "./vectorstore/chromaStore.js";
 dotenv.config();
@@ -9,6 +10,8 @@ dotenv.config();
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 // ─── Health ───────────────────────────────────────────────────────────────────
 app.get("/health", (req, res) => {
@@ -18,9 +21,7 @@ app.get("/health", (req, res) => {
 // ─── Main query endpoint ──────────────────────────────────────────────────────
 app.post("/query", async (req, res) => {
   const { query, userId = "anonymous", forceAgents = null } = req.body;
-
   if (!query) return res.status(400).json({ error: "query is required" });
-
   try {
     const result = await orchestrate(query, userId, forceAgents);
     res.json(result);
@@ -32,11 +33,9 @@ app.post("/query", async (req, res) => {
 // ─── Force specific agents ────────────────────────────────────────────────────
 app.post("/query/forced", async (req, res) => {
   const { query, agents, userId = "anonymous" } = req.body;
-
   if (!query || !agents?.length) {
     return res.status(400).json({ error: "query and agents are required" });
   }
-
   try {
     const result = await orchestrate(query, userId, agents);
     res.json(result);
@@ -56,7 +55,6 @@ app.post("/ingest", async (req, res) => {
   if (!documents || !source) {
     return res.status(400).json({ error: "documents and source required" });
   }
-
   try {
     const chunks = documents.map((text) => ({ text, source }));
     const count = await storeDocuments(chunks);
@@ -66,13 +64,91 @@ app.post("/ingest", async (req, res) => {
   }
 });
 
+// ─── Streaming query endpoint ─────────────────────────────────────────────────
+app.post("/query/stream", async (req, res) => {
+  const { query, userId = "anonymous", forceAgents = null } = req.body;
+  if (!query) return res.status(400).json({ error: "query is required" });
+
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.flushHeaders();
+
+  const send = (data) => res.write(`data: ${JSON.stringify(data)}\n\n`);
+
+  try {
+    const start = Date.now();
+
+    // Step 1: Run routing + agents (no synthesis)
+    const { trace, agentResults, agentsUsed, routingMethod, llmCalls, blocked } =
+      await orchestrateAgentsOnly(query, userId, forceAgents);
+
+    if (blocked) {
+      send({ type: "chunk", text: "I can't process that request." });
+      send({ type: "done", totalMs: 0 });
+      res.end();
+      return;
+    }
+
+    // Step 2: Send trace immediately — UI shows this before answer arrives
+    send({ type: "trace", trace, agentsUsed, routingMethod, llmCalls: llmCalls + 1 });
+    console.log("✓ Trace sent");
+
+    // Step 3: Build context from agent results
+    const context = agentResults
+      .filter((r) => r.success)
+      .map((r) => `[${r.agent}]:\n${typeof r.result === "object" ? JSON.stringify(r.result, null, 2) : r.result}`)
+      .join("\n\n");
+
+    if (!context) {
+      send({ type: "chunk", text: "I couldn't find relevant information to answer your question." });
+      send({ type: "done", totalMs: Date.now() - start });
+      res.end();
+      return;
+    }
+
+    // Step 4: Stream synthesis
+    const prompt = `You are a helpful assistant. Synthesize these agent results into a clear, well-formatted markdown answer.
+Cite which agent provided each piece of information using [AgentName].
+
+User question: ${query}
+
+Agent results:
+${context}
+
+Answer:`;
+
+    const stream = await ai.models.generateContentStream({
+      model: "gemini-3-flash-preview",
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+    });
+
+    for await (const chunk of stream) {
+      if (chunk.text) {
+        console.log("chunk:", chunk.text.slice(0, 20));
+        send({ type: "chunk", text: chunk.text });
+      }
+    }
+
+    console.log("✓ Stream done");
+    send({ type: "done", totalMs: Date.now() - start });
+    res.end();
+
+  } catch (err) {
+    console.error("Stream error:", err.message);
+    send({ type: "error", error: err.message });
+    res.end();
+  }
+});
+
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`\nNexus AI Backend running on http://localhost:${PORT}`);
   console.log("\nEndpoints:");
   console.log("  GET  /health");
-  console.log("  POST /query          { query, userId?, forceAgents? }");
-  console.log("  POST /query/forced   { query, agents[], userId? }");
+  console.log("  POST /query");
+  console.log("  POST /query/forced");
+  console.log("  POST /query/stream");
   console.log("  GET  /history/:userId");
-  console.log("  POST /ingest         { documents[], source }");
+  console.log("  POST /ingest");
 });
