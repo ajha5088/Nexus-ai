@@ -38,7 +38,7 @@ ${context}
 Answer:`;
 
   const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
+    model: "gemini-2-flash-preview",
     contents: [{ role: "user", parts: [{ text: prompt }] }],
   });
 

@@ -8,8 +8,11 @@ import { storeDocuments } from "./vectorstore/chromaStore.js";
 dotenv.config();
 
 const app = express();
-app.use(cors());
-app.use(express.json());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || "*",
+  methods: ["GET", "POST"],
+  allowedHeaders: ["Content-Type"],
+}));
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
@@ -152,3 +155,12 @@ app.listen(PORT, () => {
   console.log("  GET  /history/:userId");
   console.log("  POST /ingest");
 });
+
+if (process.env.NODE_ENV === "production" && process.env.BACKEND_URL) {
+  setInterval(async () => {
+    try {
+      await fetch(`${process.env.BACKEND_URL}/health`);
+      console.log("✓ Self-ping");
+    } catch { /* silent */ }
+  }, 14 * 60 * 1000);
+}

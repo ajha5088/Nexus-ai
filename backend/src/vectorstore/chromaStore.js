@@ -3,7 +3,21 @@ import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
 import dotenv from "dotenv";
 dotenv.config();
 
-const chroma = new ChromaClient({ host: "localhost", port: 8000 });
+const isProduction = process.env.NODE_ENV === "production";
+
+const chroma = new ChromaClient(
+  isProduction
+    ? {
+        path: process.env.CHROMA_URL,
+        auth: {
+          provider: "token",
+          credentials: process.env.CHROMA_API_KEY,
+          tokenHeaderType: "X_CHROMA_TOKEN",
+        },
+      }
+    : { host: "localhost", port: 8000 }
+);
+
 const COLLECTION = "nexus-knowledge";
 
 const embeddings = new GoogleGenerativeAIEmbeddings({

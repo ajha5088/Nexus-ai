@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: nexus-ai-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node src/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: CHROMA_URL
+        sync: false
+      - key: CHROMA_API_KEY
+        sync: false
+      - key: BACKEND_URL
+        sync: false
+    healthCheckPath: /health
