@@ -33,19 +33,30 @@ export default function Landing() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-[#080810] flex flex-col items-center justify-center px-6 overflow-hidden">
-      {/* Background */}
-      <div className="pointer-events-none fixed inset-0">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-indigo-700/10 rounded-full blur-[100px]" />
-        <div className="absolute bottom-1/4 left-1/3 w-64 h-64 bg-violet-700/10 rounded-full blur-[80px]" />
+    <div
+      style={{ backgroundColor: "#080810" }}
+      className="w-full min-h-screen flex flex-col items-center justify-center py-16 px-6"
+    >
+      {/* Full screen background glows */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+        <div
+          style={{ background: "radial-gradient(ellipse at 50% 30%, rgba(99,102,241,0.12) 0%, transparent 70%)" }}
+          className="absolute inset-0"
+        />
+        <div
+          style={{ background: "radial-gradient(ellipse at 20% 80%, rgba(139,92,246,0.08) 0%, transparent 60%)" }}
+          className="absolute inset-0"
+        />
       </div>
 
-      <div className="relative max-w-3xl w-full text-center">
+      {/* Content */}
+      <div className="relative z-10 w-full max-w-4xl mx-auto flex flex-col items-center text-center">
+
         {/* Badge */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/8 px-4 py-1.5 text-xs text-indigo-400 mb-10 font-mono"
+          className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/10 px-4 py-1.5 text-xs text-indigo-400 mb-8 font-mono"
         >
           <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
           Multi-Agent Orchestration Platform
@@ -56,7 +67,7 @@ export default function Landing() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="text-7xl font-black text-white mb-4 tracking-tighter leading-none"
+          className="text-6xl sm:text-7xl font-black text-white mb-4 tracking-tighter leading-none"
         >
           Nexus{" "}
           <span className="bg-gradient-to-r from-indigo-400 via-violet-400 to-purple-400 bg-clip-text text-transparent">
@@ -64,23 +75,24 @@ export default function Landing() {
           </span>
         </motion.h1>
 
+        {/* Subtitle */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="text-white/35 text-lg mb-14 leading-relaxed"
+          className="text-white/35 text-base sm:text-lg mb-10 leading-relaxed"
         >
           The AI that knows which AI to use.
           <br />
           Minimum LLM calls. Maximum intelligence.
         </motion.p>
 
-        {/* Features grid */}
+        {/* Features grid — full width of container */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="grid grid-cols-2 gap-3 mb-12 text-left"
+          className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-10 w-full text-left"
         >
           {FEATURES.map(({ icon: Icon, color, title, desc }) => (
             <div
@@ -89,7 +101,10 @@ export default function Landing() {
             >
               <div
                 className="w-8 h-8 rounded-xl flex items-center justify-center mb-3"
-                style={{ backgroundColor: `${color}15`, border: `1px solid ${color}25` }}
+                style={{
+                  backgroundColor: `${color}15`,
+                  border: `1px solid ${color}25`,
+                }}
               >
                 <Icon size={15} style={{ color }} />
               </div>

@@ -6,7 +6,7 @@ export default function Chat() {
   const store = useChatStore();
 
   return (
-    <div className="flex h-screen bg-[#0a0a12] overflow-hidden">
+    <div className="flex w-screen h-screen bg-[#0a0a12] overflow-hidden">
       <Sidebar
         conversations={store.conversations}
         activeId={store.activeId}
@@ -14,7 +14,7 @@ export default function Chat() {
         onCreate={store.createConversation}
         onDelete={store.deleteConversation}
       />
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 min-w-0 overflow-hidden">
         <ChatWindow key={store.activeId} store={store} />
       </div>
     </div>
