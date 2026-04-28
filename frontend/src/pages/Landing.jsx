@@ -7,25 +7,25 @@ const FEATURES = [
     icon: Zap,
     color: "#f59e0b",
     title: "Rule-based routing",
-    desc: "95% of queries resolved without touching the LLM. Sub-100ms responses."
+    desc: "95% of queries resolved without touching the LLM. Sub-100ms responses.",
   },
   {
     icon: Brain,
     color: "#6366f1",
     title: "LLM Supervisor",
-    desc: "Falls back to intelligent routing only for ambiguous queries."
+    desc: "Falls back to intelligent routing only for ambiguous queries.",
   },
   {
     icon: GitBranch,
     color: "#22c55e",
     title: "Parallel agents",
-    desc: "Multiple specialized agents run simultaneously, results synthesized in one call."
+    desc: "Multiple specialized agents run simultaneously, results synthesized in one call.",
   },
   {
     icon: Layers,
     color: "#ec4899",
     title: "Agent trace",
-    desc: "Full observability into every routing decision and agent execution."
+    desc: "Full observability into every routing decision and agent execution.",
   },
 ];
 
@@ -34,24 +34,39 @@ export default function Landing() {
 
   return (
     <div
-      style={{ backgroundColor: "#080810" }}
-      className="w-full min-h-screen flex flex-col items-center justify-center py-16 px-6"
+      style={{
+        width: "100%",
+        minHeight: "100vh",
+        backgroundColor: "#080810",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "64px 24px",
+        boxSizing: "border-box",
+        overflowX: "hidden",
+      }}
     >
       {/* Full screen background glows */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
         <div
-          style={{ background: "radial-gradient(ellipse at 50% 30%, rgba(99,102,241,0.12) 0%, transparent 70%)" }}
+          style={{
+            background:
+              "radial-gradient(ellipse at 50% 30%, rgba(99,102,241,0.12) 0%, transparent 70%)",
+          }}
           className="absolute inset-0"
         />
         <div
-          style={{ background: "radial-gradient(ellipse at 20% 80%, rgba(139,92,246,0.08) 0%, transparent 60%)" }}
+          style={{
+            background:
+              "radial-gradient(ellipse at 20% 80%, rgba(139,92,246,0.08) 0%, transparent 60%)",
+          }}
           className="absolute inset-0"
         />
       </div>
 
       {/* Content */}
       <div className="relative z-10 w-full max-w-4xl mx-auto flex flex-col items-center text-center">
-
         {/* Badge */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}

@@ -1,17 +1,38 @@
 import { Plus, MessageSquare, Trash2, Zap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function Sidebar({ conversations, activeId, onSelect, onCreate, onDelete }) {
+export default function Sidebar({
+  conversations,
+  activeId,
+  onSelect,
+  onCreate,
+  onDelete,
+}) {
   return (
-    <div className="flex flex-col h-full w-64 bg-[#080810] border-r border-white/5">
+    <div
+      style={{
+        width: "256px",
+        minWidth: "256px",
+        height: "100%",
+        backgroundColor: "#080810",
+        borderRight: "1px solid rgba(255,255,255,0.05)",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+      }}
+    >
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 py-5 border-b border-white/5">
         <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
           <Zap size={14} className="text-white" />
         </div>
         <div>
-          <span className="text-sm font-bold text-white tracking-tight">Nexus AI</span>
-          <p className="text-[10px] text-white/25 leading-none mt-0.5">Multi-Agent Platform</p>
+          <span className="text-sm font-bold text-white tracking-tight">
+            Nexus AI
+          </span>
+          <p className="text-[10px] text-white/25 leading-none mt-0.5">
+            Multi-Agent Platform
+          </p>
         </div>
       </div>
 
@@ -54,7 +75,10 @@ export default function Sidebar({ conversations, activeId, onSelect, onCreate, o
                 {conv.title}
               </span>
               <button
-                onClick={(e) => { e.stopPropagation(); onDelete(conv.id); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(conv.id);
+                }}
                 className="opacity-0 group-hover:opacity-100 text-white/20 hover:text-red-400 transition-all"
               >
                 <Trash2 size={11} />
@@ -67,7 +91,8 @@ export default function Sidebar({ conversations, activeId, onSelect, onCreate, o
       {/* Footer */}
       <div className="px-5 py-4 border-t border-white/5">
         <p className="text-[10px] text-white/15 leading-relaxed">
-          Max 2 LLM calls per query.<br />
+          Max 2 LLM calls per query.
+          <br />
           Rule-based routing first.
         </p>
       </div>

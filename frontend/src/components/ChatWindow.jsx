@@ -49,7 +49,16 @@ export default function ChatWindow({ store }) {
   const isEmpty = messages.length === 0;
 
   return (
-    <div className="flex flex-col h-full relative">
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        width: "100%",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
       {/* Ambient glow */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-64 bg-indigo-600/8 rounded-full blur-3xl" />
@@ -79,7 +88,11 @@ export default function ChatWindow({ store }) {
               <div className="text-center">
                 <motion.div
                   animate={{ scale: [1, 1.05, 1] }}
-                  transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+                  transition={{
+                    repeat: Infinity,
+                    duration: 3,
+                    ease: "easeInOut",
+                  }}
                   className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-2xl font-black text-white shadow-2xl shadow-indigo-500/30 mx-auto mb-4"
                 >
                   N
@@ -160,10 +173,11 @@ export default function ChatWindow({ store }) {
               disabled={!input.trim() || isLoading}
               className="shrink-0 flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-500/30 disabled:opacity-30 disabled:cursor-not-allowed transition-opacity"
             >
-              {isLoading
-                ? <Loader2 size={14} className="animate-spin" />
-                : <ArrowUp size={14} />
-              }
+              {isLoading ? (
+                <Loader2 size={14} className="animate-spin" />
+              ) : (
+                <ArrowUp size={14} />
+              )}
             </motion.button>
           </div>
           <p className="text-center text-[10px] text-white/12 mt-2 font-mono">
